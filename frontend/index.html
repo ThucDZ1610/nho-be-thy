@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
+  <title>ThucGPT | Trợ lý AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <main id="authView" class="auth-screen">
+    <section class="auth-panel" aria-labelledby="authTitle">
+      <div class="auth-brand">
+        <div class="brand-mark"><i data-lucide="sparkles"></i></div>
+        <span>THUCGPT</span>
+      </div>
+      <p class="eyebrow">KHÔNG GIAN TRÒ CHUYỆN CÁ NHÂN</p>
+      <h1 id="authTitle">Chào mừng bạn</h1>
+      <p id="authSubtitle" class="auth-subtitle">Đăng nhập để mở các cuộc trò chuyện của bạn.</p>
+
+      <div class="auth-switch" role="tablist" aria-label="Tài khoản">
+        <button id="loginTab" class="auth-tab active" type="button" role="tab" aria-selected="true">Đăng nhập</button>
+        <button id="registerTab" class="auth-tab" type="button" role="tab" aria-selected="false">Đăng ký</button>
+      </div>
+      <p id="authNotice" class="auth-notice" role="alert" hidden></p>
+
+      <form id="loginForm" class="auth-form">
+        <label for="loginUsername">Tài khoản</label>
+        <input id="loginUsername" name="username" type="text" autocomplete="username" minlength="4" maxlength="24" required>
+        <label for="loginPassword">Mật khẩu</label>
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        <button class="auth-submit" type="submit">Đăng nhập <i data-lucide="arrow-right"></i></button>
+      </form>
+
+      <form id="registerForm" class="auth-form" hidden>
+        <label for="registerName">Tên hiển thị</label>
+        <input id="registerName" name="name" type="text" autocomplete="name" minlength="2" maxlength="60" required>
+        <label for="registerUsername">Tài khoản</label>
+        <input id="registerUsername" name="username" type="text" autocomplete="username" minlength="4" maxlength="24" pattern="[A-Za-z0-9_]{4,24}" required>
+        <label for="registerPassword">Mật khẩu</label>
+        <input id="registerPassword" name="password" type="password" autocomplete="new-password" required>
+        <div class="password-meter" aria-hidden="true"><span id="passwordStrengthBar"></span></div>
+        <p id="passwordStrengthText" class="password-strength">Chưa đạt yêu cầu</p>
+        <ul class="password-rules" aria-label="Yêu cầu mật khẩu">
+          <li data-password-rule="length">Ít nhất 12 ký tự</li>
+          <li data-password-rule="lower">Có chữ thường</li>
+          <li data-password-rule="upper">Có chữ hoa</li>
+          <li data-password-rule="number">Có chữ số</li>
+          <li data-password-rule="symbol">Có ký tự đặc biệt</li>
+        </ul>
+        <label for="registerPasswordConfirm">Nhập lại mật khẩu</label>
+        <input id="registerPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" required>
+        <button id="registerSubmit" class="auth-submit" type="submit" disabled>Tạo tài khoản <i data-lucide="arrow-right"></i></button>
+      </form>
+    </section>
+  </main>
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div id="appShell" class="app-shell" hidden>
+    <aside id="sidebar" class="sidebar" aria-label="Thanh bên">
+      <div class="brand-row">
+        <div class="brand-mark"><i data-lucide="sparkles"></i></div>
+        <div class="brand-copy">
+          <h1>THUCGPT</h1>
+          <p>LOCAL INTELLIGENCE</p>
+        </div>
+        <button id="closeSidebar" class="icon-button mobile-only" type="button" title="Đóng thanh bên" aria-label="Đóng thanh bên"><i data-lucide="x"></i></button>
+      </div>
+
+      <button id="newChatButton" class="new-chat-button" type="button"><i data-lucide="plus"></i><span>Trò chuyện mới</span></button>
+
+      <section class="history-section" aria-label="Lịch sử trò chuyện">
+        <div class="section-heading"><span>TRÒ CHUYỆN</span><span id="chatCount" class="count">0</span></div>
+        <div id="chatHistory" class="chat-history">
+          <p id="historyEmpty" class="history-empty">Tin nhắn đầu tiên sẽ tạo lịch sử trò chuyện tại đây.</p>
+        </div>
+      </section>
+
+      <div class="sidebar-footer">
+        <div class="status-light" id="modelStatusLight"></div>
+        <div class="model-copy"><span id="modelStatus">Đang kiểm tra Ollama</span><small id="modelName">LOCAL MODEL</small></div>
+        <button id="refreshStatus" class="icon-button" type="button" title="Kiểm tra lại kết nối Ollama" aria-label="Kiểm tra lại kết nối Ollama"><i data-lucide="refresh-cw"></i></button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebar" class="icon-button mobile-only" type="button" title="Mở lịch sử" aria-label="Mở lịch sử"><i data-lucide="menu"></i></button>
+          <div class="connection-label"><span class="pulse-dot"></span><span>THUCGPT <span class="muted-slash">/</span> <span id="connectionText">SẴN SÀNG</span></span></div>
+        </div>
+        <div class="topbar-right">
+          <span class="local-badge"><i data-lucide="hard-drive"></i> XỬ LÝ CỤC BỘ</span>
+          <span id="accountName" class="account-name"></span>
+          <button id="logoutButton" class="icon-button" type="button" title="Đăng xuất" aria-label="Đăng xuất"><i data-lucide="log-out"></i></button>
+          <button id="deleteChatButton" class="icon-button delete-button" type="button" title="Xóa cuộc trò chuyện này" aria-label="Xóa cuộc trò chuyện này" disabled><i data-lucide="trash-2"></i></button>
+        </div>
+      </header>
+
+      <section id="chatMessages" class="messages" aria-live="polite">
+        <div id="welcome" class="welcome-view">
+          <div class="welcome-icon"><i data-lucide="sparkles"></i></div>
+          <p class="eyebrow">TRỢ LÝ AI CHẠY TRÊN MÁY CỦA BẠN</p>
+          <h2>Xin chào, mình là <span>ThucGPT.</span></h2>
+          <p class="welcome-description">Hỏi đáp, viết nội dung, phân tích hoặc gửi hình ảnh để bắt đầu.</p>
+        </div>
+      </section>
+
+      <div class="composer-area">
+        <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+        <div id="imagePreview" class="image-preview" hidden>
+          <img id="imagePreviewThumb" alt="Ảnh đính kèm">
+          <span id="imagePreviewName"></span>
+          <button id="removeImageButton" class="icon-button" type="button" title="Gỡ ảnh" aria-label="Gỡ ảnh"><i data-lucide="x"></i></button>
+        </div>
+        <form id="chatForm" class="composer">
+          <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          <button id="attachButton" class="icon-button attach-button" type="button" title="Đính kèm hình ảnh" aria-label="Đính kèm hình ảnh"><i data-lucide="paperclip"></i></button>
+          <textarea id="userInput" rows="1" placeholder="Nhắn tin cho ThucGPT..." aria-label="Tin nhắn"></textarea>
+          <button id="sendButton" class="send-button" type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn"><i data-lucide="arrow-up"></i></button>
+        </form>
+        <p class="composer-caption">ENTER ĐỂ GỬI <span>·</span> SHIFT + ENTER ĐỂ XUỐNG DÒNG <span>·</span> DỮ LIỆU LƯU TRÊN MÁY CHỦ NÀY</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="deleteConfirmOverlay" class="modal-overlay" hidden>
+    <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" aria-describedby="deleteConfirmMessage" tabindex="-1">
+      <div class="confirm-icon"><i data-lucide="trash-2"></i></div>
+      <h2 id="deleteConfirmTitle">Xóa cuộc trò chuyện?</h2>
+      <p id="deleteConfirmMessage"></p>
+      <div class="confirm-actions">
+        <button id="cancelDeleteButton" class="confirm-cancel" type="button">Hủy</button>
+        <button id="confirmDeleteButton" class="confirm-delete" type="button"><i data-lucide="trash-2"></i><span>Xóa trò chuyện</span></button>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

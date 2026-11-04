@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GhostGPT - Monochrome Glassmorphism Interface</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            glass: {
+              bg: 'rgba(18, 18, 18, 0.65)',
+              border: 'rgba(255, 255, 255, 0.12)',
+              card: 'rgba(255, 255, 255, 0.04)',
+              cardAlt: 'rgba(255, 255, 255, 0.08)',
+              glow: 'rgba(255, 255, 255, 0.25)',
+            }
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'white-glow': '0 0 15px rgba(255, 255, 255, 0.15)',
+            'glass-subtle': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Glassmorphism Blur & Scrollbar */
+    .backdrop-glass {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    
+    .backdrop-glass-dense {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    /* Custom Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Cursor typing effect */
+    .typing-cursor::after {
+      content: '▋';
+      display: inline-block;
+      animation: blink 0.8s infinite;
+      margin-left: 2px;
+      color: #ffffff;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-black text-gray-200 h-full font-sans antialiased selection:bg-white selection:text-black overflow-hidden">
+
+  <!-- Main Grid Background Animation (Subtle Grid) -->
+  <div class="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+  <div class="flex h-full w-full relative z-10">
+
+    <!-- SIDEBAR OVERLAY (Mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden transition-opacity"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-30 w-72 bg-black/40 backdrop-glass border-r border-glass-border flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0">
+      
+      <!-- Sidebar Header -->
+      <div class="p-4 border-b border-glass-border flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center shadow-white-glow">
+            <i data-lucide="terminal" class="w-4 h-4 text-white"></i>
+          </div>
+          <div>
+            <h1 class="font-mono text-sm font-bold tracking-wider text-white">GHOST//GPT</h1>
+            <p class="text-[10px] text-gray-400 font-mono">v2.0 · DARK-WHITE</p>
+          </div>
+        </div>
+        <button id="closeSidebarMobile" class="md:hidden text-gray-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- New Chat Button -->
+      <div class="p-4">
+        <button id="btnNewChat" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 shadow-glass-subtle hover:border-white/40 hover:shadow-white-glow group">
+          <i data-lucide="plus" class="w-4 h-4 transition-transform group-hover:rotate-90"></i>
+          <span>Trò chuyện mới</span>
+        </button>
+      </div>
+
+      <!-- Chat History List -->
+      <div class="flex-1 overflow-y-auto px-3 space-y-1" id="chatHistoryList">
+        <div class="px-3 py-2 text-[11px] font-mono uppercase tracking-wider text-gray-500">Gần đây</div>
+        
+        <!-- Sample History Item 1 -->
+        <button class="w-full text-left p-2.5 rounded-lg bg-white/10 border border-white/10 text-white text-xs flex items-center gap-2.5 truncate transition-all">
+          <i data-lucide="message-square" class="w-3.5 h-3.5 text-gray-300 flex-shrink-0"></i>
+          <span class="truncate">Giải thuật mã hóa RSA & AES</span>
+        </button>
+
+        <!-- Sample History Item 2 -->
+        <button class="w-full text-left p-2.5 rounded-lg hover:bg-white/5 border border-transparent text-gray-400 hover:text-gray-200 text-xs flex items-center gap-2.5 truncate transition-all">
+          <i data-lucide="message-square" class="w-3.5 h-3.5 text-gray-500 flex-shrink-0"></i>
+          <span class="truncate">Tạo kịch bản Test Penetration</span>
+        </button>
+
+        <!-- Sample History Item 3 -->
+        <button class="w-full text-left p-2.5 rounded-lg hover:bg-white/5 border border-transparent text-gray-400 hover:text-gray-200 text-xs flex items-center gap-2.5 truncate transition-all">
+          <i data-lucide="message-square" class="w-3.5 h-3.5 text-gray-500 flex-shrink-0"></i>
+          <span class="truncate">Tối ưu hóa mã Python AI</span>
+        </button>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-4 border-t border-glass-border bg-black/20">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-700 to-gray-400 flex items-center justify-center text-xs font-bold text-black border border-white/30">
+            OP
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-white truncate">Operator Session</p>
+            <p class="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Encrypted
+            </p>
+          </div>
+          <button class="text-gray-400 hover:text-white p-1">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN CHAT CONTAINER -->
+    <main class="flex-1 flex flex-col h-full bg-black/60 backdrop-glass relative min-w-0">
+      
+      <!-- HEADER -->
+      <header class="h-16 border-b border-glass-border px-4 md:px-6 flex items-center justify-between bg-black/30 backdrop-glass-dense sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+          <button id="openSidebarMobile" class="md:hidden text-gray-400 hover:text-white p-1">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <div class="flex items-center gap-2.5">
+            <div class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></div>
+            <h2 class="font-mono text-sm font-semibold tracking-wide text-white">NEURAL CORE // ACTIVE</h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:inline-block px-2.5 py-1 rounded-full text-[10px] font-mono border border-white/10 bg-white/5 text-gray-300">
+            System: Nominal
+          </span>
+          <button id="clearChatBtn" title="Xóa đoạn chat" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- MESSAGES SCROLL AREA -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        
+        <!-- Welcome Message (AI) -->
+        <div class="flex gap-4 max-w-3xl">
+          <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 text-white shadow-white-glow">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-gray-400">GHOST_AI</span>
+              <span class="text-[10px] text-gray-600 font-mono">System initialized</span>
+            </div>
+            <!-- AI Message Bubble (Mờ xen kẽ màu tối + viền trắng mảnh) -->
+            <div class="p-4 rounded-2xl rounded-tl-none bg-glass-cardAlt border border-glass-border backdrop-glass text-gray-200 text-sm leading-relaxed shadow-glass-subtle">
+              Xin chào Operator. Tôi là giao diện trí tuệ nhân tạo **Monochrome Edition**. Tôi đã sẵn sàng hỗ trợ bạn xử lý dữ liệu, viết mã và phân tích hệ thống. Bạn muốn bắt đầu công việc gì hôm nay?
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample User Message -->
+        <div class="flex gap-4 max-w-3xl ml-auto flex-row-reverse">
+          <div class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-white-glow">
+            OP
+          </div>
+          <div class="flex-1 space-y-2 text-right">
+            <div class="flex items-center gap-2 justify-end">
+              <span class="text-[10px] text-gray-600 font-mono">10:42 AM</span>
+              <span class="text-xs font-mono text-gray-300">USER</span>
+            </div>
+            <!-- User Message Bubble (Kính mờ viền trắng nhẹ, nằm bên phải) -->
+            <div class="inline-block text-left p-4 rounded-2xl rounded-tr-none bg-white/10 border border-white/20 backdrop-glass text-white text-sm leading-relaxed shadow-white-glow">
+              Hãy tóm tắt ngắn gọn quy trình kiểm thử bảo mật bảo mật ứng dụng web.
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample AI Response -->
+        <div class="flex gap-4 max-w-3xl">
+          <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 text-white shadow-white-glow">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-gray-400">GHOST_AI</span>
+              <span class="text-[10px] text-gray-600 font-mono">10:42 AM</span>
+            </div>
+            <!-- AI Message Bubble -->
+            <div class="p-4 rounded-2xl rounded-tl-none bg-glass-card border border-glass-border backdrop-glass text-gray-200 text-sm leading-relaxed shadow-glass-subtle space-y-3">
+              <p>Quy trình kiểm thử bảo mật web tiêu chuẩn bao gồm 4 bước chính:</p>
+              <ul class="list-disc pl-5 space-y-1 text-gray-300 font-mono text-xs">
+                <li><strong class="text-white">Reconnaissance:</strong> Thu thập thông tin mục tiêu và cấu trúc ứng dụng.</li>
+                <li><strong class="text-white">Vulnerability Scanning:</strong> Quét lỗ hổng tự động và thủ công (XSS, SQLi, CSRF).</li>
+                <li><strong class="text-white">Exploitation:</strong> Thử nghiệm khai thác bảo mật an toàn.</li>
+                <li><strong class="text-white">Reporting:</strong> Lập báo cáo chi tiết & đề xuất biện pháp khắc phục.</li>
+              </ul>
+              <!-- Image Attachment inside AI Message -->
+              <div class="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/40 p-1">
+                <img src="https://placehold.co/600x300/181818/ffffff?text=NETWORK+SECURITY+ANALYSIS+GRAPH" alt="Security Graph" class="w-full h-auto rounded-lg opacity-90 hover:opacity-100 transition-opacity">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CHAT INPUT AREA -->
+      <div class="p-4 md:p-6 border-t border-glass-border bg-black/40 backdrop-glass-dense">
+        <!-- Attached Image Preview Container -->
+        <div id="imagePreviewContainer" class="max-w-4xl mx-auto mb-2 hidden">
+          <div class="inline-flex items-center gap-2 p-1.5 pl-3 bg-white/10 border border-white/20 backdrop-glass rounded-xl text-xs text-white">
+            <i data-lucide="image" class="w-3.5 h-3.5 text-gray-300"></i>
+            <span id="previewImageName" class="max-w-[200px] truncate font-mono text-[11px]">image.jpg</span>
+            <button id="removeImageBtn" type="button" class="p-1 hover:bg-white/20 rounded-lg text-gray-400 hover:text-white transition">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <form id="chatForm" class="max-w-4xl mx-auto relative flex items-center">
+          
+          <!-- Hidden File Input for Image Upload -->
+          <input type="file" id="imageInput" accept="image/*" class="hidden">
+
+          <!-- Upload Image Button -->
+          <button 
+            type="button" 
+            id="uploadImgBtn"
+            title="Đính kèm hình ảnh"
+            class="absolute left-2.5 z-10 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <i data-lucide="image-plus" class="w-4 h-4"></i>
+          </button>
+          
+          <!-- Glassmorphism Input Field -->
+          <textarea 
+            id="userInput"
+            rows="1" 
+            placeholder="Nhập lệnh, câu hỏi hoặc đính kèm ảnh..." 
+            class="w-full pl-11 pr-14 py-3.5 rounded-xl bg-white/5 border border-white/15 focus:border-white/40 focus:bg-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-1 focus:ring-white/30 backdrop-glass resize-none transition-all duration-200 max-h-32 min-h-[50px]"
+          ></textarea>
+
+          <!-- Action Buttons inside input -->
+          <div class="absolute right-2 flex items-center gap-1">
+            <button 
+              type="submit" 
+              id="sendBtn"
+              class="w-9 h-9 rounded-lg bg-white hover:bg-gray-200 text-black flex items-center justify-center transition-all duration-200 shadow-white-glow hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+            >
+              <i data-lucide="arrow-up" class="w-5 h-5 stroke-[2.5]"></i>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Minimal Footer info -->
+        <div class="mt-2 text-center text-[10px] text-gray-500 font-mono">
+          GhostGPT Dark-White Glass Protocol v1.0 · Shift + Enter để xuống dòng
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- JavaScript Interaction Logic -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // DOM Elements
+    const sidebar = document.getElementById('sidebar');
+    const openSidebarMobileBtn = document.getElementById('openSidebarMobile');
+    const closeSidebarMobileBtn = document.getElementById('closeSidebarMobile');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
+    const btnNewChat = document.getElementById('btnNewChat');
+    const imageInput = document.getElementById('imageInput');
+    const uploadImgBtn = document.getElementById('uploadImgBtn');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const previewImageName = document.getElementById('previewImageName');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+
+    let selectedImageSrc = null;
+
+    // Upload image trigger
+    uploadImgBtn.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        previewImageName.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          selectedImageSrc = evt.target.result;
+          imagePreviewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+      selectedImageSrc = null;
+      imageInput.value = '';
+      imagePreviewContainer.classList.add('hidden');
+    });
+
+    // Sidebar Mobile Toggle
+    function toggleSidebar(show) {
+      if (show) {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+      }
+    }
+
+    openSidebarMobileBtn.addEventListener('click', () => toggleSidebar(true));
+    closeSidebarMobileBtn.addEventListener('click', () => toggleSidebar(false));
+    sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+
+    // Auto-resize Textarea
+    userInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Handle Enter Key Submission (Shift+Enter for newline)
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Scroll to bottom of chat
+    function scrollToBottom() {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // AI Simulated Responses
+    const sampleAiResponses = [
+      "Hệ thống đã nhận thông tin và hình ảnh phân tích. Yêu cầu của bạn đang được xử lý...",
+      "Đây là thông tin tối giản theo yêu cầu của bạn. Tất cả dữ liệu đã được tổng hợp xong.",
+      "Giao diện Monochrome Glassmorphism mang lại độ tương phản cao và giảm mỏi mắt tối đa khi làm việc ban đêm.",
+      "Lệnh đã thực thi thành công. Bạn có cần hỗ trợ thêm phân đoạn mã nào nữa không?"
+    ];
+
+    // Append User Message to UI
+    function appendUserMessage(text, imageSrc) {
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const imgHTML = imageSrc ? `<div class="mt-2 overflow-hidden rounded-xl border border-white/20"><img src="${imageSrc}" class="max-w-xs max-h-52 object-cover rounded-lg"></div>` : '';
+      const textHTML = text ? `<div>${escapeHtml(text)}</div>` : '';
+
+      const msgHTML = `
+        <div class="flex gap-4 max-w-3xl ml-auto flex-row-reverse animate-fade-in">
+          <div class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-white-glow">
+            OP
+          </div>
+          <div class="flex-1 space-y-2 text-right">
+            <div class="flex items-center gap-2 justify-end">
+              <span class="text-[10px] text-gray-600 font-mono">${timeStr}</span>
+              <span class="text-xs font-mono text-gray-300">USER</span>
+            </div>
+            <div class="inline-block text-left p-4 rounded-2xl rounded-tr-none bg-white/10 border border-white/20 backdrop-glass text-white text-sm leading-relaxed shadow-white-glow">
+              ${textHTML}
+              ${imgHTML}
+            </div>
+          </div>
+        </div>
+      `;
+      chatMessages.insertAdjacentHTML('beforeend', msgHTML);
+      scrollToBottom();
+    }
+
+    // Append AI Message Shell & Trigger Typing Effect
+    function appendAiTypingMessage(fullText) {
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const msgId = 'ai-msg-' + Date.now();
+      
+      const msgHTML = `
+        <div class="flex gap-4 max-w-3xl animate-fade-in">
+          <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 text-white shadow-white-glow">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-gray-400">GHOST_AI</span>
+              <span class="text-[10px] text-gray-600 font-mono">${timeStr}</span>
+            </div>
+            <div id="${msgId}" class="p-4 rounded-2xl rounded-tl-none bg-glass-card border border-glass-border backdrop-glass text-gray-200 text-sm leading-relaxed shadow-glass-subtle typing-cursor">
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.insertAdjacentHTML('beforeend', msgHTML);
+      lucide.createIcons();
+      scrollToBottom();
+
+      const msgContainer = document.getElementById(msgId);
+      let charIndex = 0;
+
+      // Typing animation interval
+      const timer = setInterval(() => {
+        if (charIndex < fullText.length) {
+          msgContainer.textContent += fullText.charAt(charIndex);
+          charIndex++;
+          scrollToBottom();
+        } else {
+          clearInterval(timer);
+          msgContainer.classList.remove('typing-cursor');
+        }
+      }, 25);
+    }
+
+    // Utility to prevent XSS
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+
+    // Form Submit Handler
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message && !selectedImageSrc) return;
+
+      // 1. Add User message
+      appendUserMessage(message, selectedImageSrc);
+
+      // Clear input and image state
+      userInput.value = '';
+      userInput.style.height = 'auto';
+      selectedImageSrc = null;
+      imageInput.value = '';
+      imagePreviewContainer.classList.add('hidden');
+
+      // Disable button briefly
+      sendBtn.disabled = true;
+
+      // 2. Simulate AI response delay
+      setTimeout(() => {
+        const randomResponse = sampleAiResponses[Math.floor(Math.random() * sampleAiResponses.length)];
+        appendAiTypingMessage(randomResponse);
+        sendBtn.disabled = false;
+      }, 600);
+    });
+
+    // Clear Chat Action
+    clearChatBtn.addEventListener('click', () => {
+      chatMessages.innerHTML = `
+        <div class="flex gap-4 max-w-3xl">
+          <div class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 text-white shadow-white-glow">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-gray-400">GHOST_AI</span>
+              <span class="text-[10px] text-gray-600 font-mono">Reset Complete</span>
+            </div>
+            <div class="p-4 rounded-2xl rounded-tl-none bg-glass-card border border-glass-border backdrop-glass text-gray-200 text-sm leading-relaxed shadow-glass-subtle">
+              Cuộc trò chuyện đã được làm mới. Tôi có thể giúp gì cho bạn?
+            </div>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    });
+
+    btnNewChat.addEventListener('click', () => {
+      clearChatBtn.click();
+      if (window.innerWidth < 768) {
+        toggleSidebar(false);
+      }
+    });
+
+  </script>
+</body>
+</html>
